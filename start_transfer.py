@@ -8,6 +8,7 @@ Description:
 import sys
 import os
 import transfer
+import bean
 
 
 def main():
@@ -47,4 +48,6 @@ if __name__ == '__main__':
     # transfer.doc_to_pdf("D:\\doc.docx", "D:\\doc.pdf")
     # transfer.ppt_to_pdf("D:\\ppt.pptx", "D:\\ppt.pdf")
     # transfer.excel_to_pdf("D:\\excel.xlsx", "D:\\excel.pdf")
-    transfer.ppt_to_jpg("D:\\ppt.pptx", "D:\\jpg\\")
+    # transfer.ppt_to_jpg("D:\\ppt.pptx", "D:\\jpg\\")
+    word = bean.Word("./input")
+
