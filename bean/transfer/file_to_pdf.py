@@ -28,6 +28,7 @@ sys.setdefaultencoding("utf8")
 
 # transfer word file to pdf
 def doc_to_pdf(input_path, output_path):
+    print input_path
     word_generate_support()
     word = gencache.EnsureDispatch("Word.Application")
     try:
