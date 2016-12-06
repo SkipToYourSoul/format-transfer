@@ -13,3 +13,5 @@ config: http://blog.chinaunix.net/uid-24585858-id-4820471.html
 
 
 http://blog.csdn.net/thundor/article/details/5968581
+
+copy file: http://python3-cookbook.readthedocs.io/zh_CN/latest/c13/p07_copy_move_files_and_directories.html

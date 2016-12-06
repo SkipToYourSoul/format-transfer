@@ -8,7 +8,6 @@ Description: transfer doc(x), ppt(x), xls(x) to PDF file
 try:
     import sys
     import traceback
-    import chardet
     from win32com.client import constants, gencache
 except ImportError:
     print >> sys.stderr, """ !!!
@@ -23,23 +22,9 @@ except ImportError:
     """ % (sys.exc_info(), sys.version)
     sys.exit(1)
 
-reload(sys)
-sys.setdefaultencoding("utf8")
-
 
 # transfer word file to pdf
 def doc_to_pdf(input_path, output_path):
-    print chardet.detect(input_path)
-    print chardet.detect(output_path)
-
-    in_encode = chardet.detect(input_path).get("encoding")
-    input_path = input_path.decode(in_encode).encode("gb2312")
-    out_encode = chardet.detect(output_path).get("encoding")
-    output_path = output_path.decode(out_encode).encode("gbk")
-
-    print chardet.detect(input_path)
-    print chardet.detect(output_path)
-
     word_generate_support()
     word = gencache.EnsureDispatch("Word.Application")
     try:
@@ -51,9 +36,8 @@ def doc_to_pdf(input_path, output_path):
                                 Item=constants.wdExportDocumentWithMarkup,
                                 CreateBookmarks=constants.wdExportCreateHeadingBookmarks)
         return 0
-    except Exception, e:
-        print "Word to pdf exception: " + str(e)
-        print traceback.format_exc()
+    except Exception as e:
+        traceback.format_exc()
         return 1
     finally:
         word.Quit(constants.wdDoNotSaveChanges)
@@ -61,11 +45,6 @@ def doc_to_pdf(input_path, output_path):
 
 # transfer ppt file to pdf
 def ppt_to_pdf(input_path, output_path):
-    in_encode = chardet.detect(input_path).get("encoding")
-    input_path = input_path.decode(in_encode).encode("gbk")
-    out_encode = chardet.detect(output_path).get("encoding")
-    output_path = output_path.decode(out_encode).encode("gbk")
-
     powerpoint = gencache.EnsureDispatch('Powerpoint.application')
     try:
         powerpoint.DisplayAlerts = 0
@@ -73,9 +52,8 @@ def ppt_to_pdf(input_path, output_path):
         ppt.ExportAsFixedFormat(output_path, constants.ppFixedFormatTypePDF,
                                 constants.ppFixedFormatIntentScreen, PrintRange=None)
         return 0
-    except Exception, e:
-        print "Powerpoint to pdf exception: " + str(e)
-        print traceback.format_exc()
+    except Exception as e:
+        traceback.format_exc()
         return 1
     finally:
         powerpoint.Quit()
@@ -83,11 +61,6 @@ def ppt_to_pdf(input_path, output_path):
 
 # transfer excel file to pdf
 def excel_to_pdf(input_path, output_path):
-    in_encode = chardet.detect(input_path).get("encoding")
-    input_path = input_path.decode(in_encode).encode("gbk")
-    out_encode = chardet.detect(output_path).get("encoding")
-    output_path = output_path.decode(out_encode).encode("gbk")
-
     excel = gencache.EnsureDispatch('Excel.application')
 
     # Format setting in excel
@@ -103,9 +76,8 @@ def excel_to_pdf(input_path, output_path):
         wb.SaveAs(output_path, FileFormat=57)
         # wb.ExportAsFixedFormat(0, output)
         return 0
-    except Exception, e:
-        print "Powerpoint to pdf exception: " + str(e)
-        print traceback.format_exc()
+    except Exception as e:
+        traceback.format_exc()
         return 1
     finally:
         excel.Quit()

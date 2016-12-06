@@ -9,7 +9,6 @@ try:
     import sys
     import os
     import traceback
-    import chardet
     from win32com.client import constants, gencache
 except ImportError:
     print >> sys.stderr, """ !!!
@@ -24,16 +23,8 @@ except ImportError:
     """ % (sys.exc_info(), sys.version)
     sys.exit(1)
 
-reload(sys)
-sys.setdefaultencoding("utf8")
-
 
 def ppt_to_jpg(input_path, output_path):
-    in_encode = chardet.detect(input_path).get("encoding")
-    input_path = input_path.decode(in_encode).encode("gbk")
-    out_encode = chardet.detect(output_path).get("encoding")
-    output_path = output_path.decode(out_encode).encode("gbk")
-
     powerpoint = gencache.EnsureDispatch('Powerpoint.application')
     try:
         powerpoint.DisplayAlerts = 0
@@ -43,9 +34,8 @@ def ppt_to_jpg(input_path, output_path):
             full_path = os.path.join(output_path, "%d.jpg" % i)
             slide.Export(full_path, "JPG")
         return 0
-    except Exception, e:
-        print "Powerpoint to pdf exception: " + str(e)
-        print traceback.format_exc()
+    except Exception as e:
+        traceback.format_exc()
         return 1
     finally:
         powerpoint.Quit()

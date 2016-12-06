@@ -7,8 +7,9 @@ Description: Start GUI
 
 try:
     import sys
-    from Tkinter import *
-    from gui import *
+    from tkinter import *
+    import gui.components
+    import os
 except ImportError:
     print >> sys.stderr, """ !!!
     There was a problem importing one of the Python modules required.
@@ -22,16 +23,13 @@ except ImportError:
     """ % (sys.exc_info(), sys.version)
     sys.exit(1)
 
-reload(sys)
-sys.setdefaultencoding("utf8")
-
 
 def main():
     root = Tk()
     root.title('File Transfer')
     root.resizable(0, 0)
-    center_window(root, 640, 360)
-    container = MainContainer(os.curdir, root)
+    gui.components.center_window(root, 800, 600)
+    container = gui.components.MainContainer(os.curdir, root)
     container.hello_message()
     root.mainloop()
 

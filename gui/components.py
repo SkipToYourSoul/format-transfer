@@ -7,11 +7,11 @@ Description:
 
 try:
     import sys
-    from Tkinter import *
-    import controller as CONTROLLER
-    import tkFileDialog
-    import tkMessageBox
     import os
+    from tkinter import *
+    import tkinter.messagebox
+    import tkinter.filedialog
+    import controller.main_controller as CONTROLLER
 except ImportError:
     print >> sys.stderr, """ !!!
     There was a problem importing one of the Python modules required.
@@ -25,9 +25,6 @@ except ImportError:
     """ % (sys.exc_info(), sys.version)
     sys.exit(1)
 
-reload(sys)
-sys.setdefaultencoding("utf8")
-
 
 class MainContainer(object):
     dir_name = ""
@@ -40,8 +37,7 @@ class MainContainer(object):
         self.console_text.delete('1.0', '999999.0')
 
     def help(self):
-        tkMessageBox.showinfo(self.root,
-                              u' Author: liye \n Version: 1.0 \n Help email: liye.forwork@foxmail.com')
+        tkinter.messagebox.showinfo(self.root, ' Author: liye \n Version: 1.0 \n Help email: liye.forwork@foxmail.com')
 
     def __init__(self, init_dir=None, master=None):
         # menu
@@ -65,11 +61,11 @@ class MainContainer(object):
         # top area
         top_frame = Frame(master, height=80)
         top_frame.pack(side=TOP, padx=5, pady=5)
-        self.dir_label = Label(top_frame, text=u'The directory you choose is: ')
+        self.dir_label = Label(top_frame, text='The directory you choose is: ')
         self.entry_var = StringVar()
-        self.dir_entry = Entry(top_frame, textvariable=self.entry_var)
-        self.dir_button = Button(top_frame, command=self.open_dir, text=u'Choose directory')
-        self.transfer_button = Button(top_frame, command=self.transfer_files, text=u'Transfer')
+        self.dir_entry = Entry(top_frame, textvariable=self.entry_var, width=50)
+        self.dir_button = Button(top_frame, command=self.open_dir, text='Choose directory')
+        self.transfer_button = Button(top_frame, command=self.transfer_files, text='Transfer')
 
         self.dir_label.grid(row=0, column=0, sticky=W)
         self.dir_entry.grid(row=0, column=1)
@@ -81,7 +77,7 @@ class MainContainer(object):
         self.content_frame.pack(side=TOP, fill=BOTH)
 
         self.text_bar = Scrollbar(self.content_frame, orient=VERTICAL)
-        self.console_text = Text(self.content_frame, yscrollcommand=self.text_bar.set, wrap=CHAR)
+        self.console_text = Text(self.content_frame, yscrollcommand=self.text_bar.set, wrap=CHAR, height=600)
 
         self.text_bar.config(command=self.console_text.yview)
 
@@ -89,34 +85,35 @@ class MainContainer(object):
         self.console_text.pack(side=LEFT, fill=BOTH, expand=1)
 
     def hello_message(self):
-        self.console_text.insert(END, '-----------------------------------------------------\n')
-        self.console_text.insert(END, '| Welcome to use file transfer for your course file |\n')
-        self.console_text.insert(END, '| 1. Check the config file.                         |\n')
-        self.console_text.insert(END, '| 2. Please choose your course dir.                 |\n')
-        self.console_text.insert(END, '| 3. Click transfer button and have fun ^-^         |\n')
-        self.console_text.insert(END, '-----------------------------------------------------\n')
+        self.console_text.insert(END, '>>>\n')
+        self.console_text.insert(END, '> Welcome to use file transfer for your course file \n')
+        self.console_text.insert(END, '> 1. Write your config file with the template in \'config.conf\'.\n')
+        self.console_text.insert(END, '> 2. Press the Choose Button to choose your course dir.\n')
+        self.console_text.insert(END, '> 3. Click transfer button and have fun ^-^\n')
+        self.console_text.insert(END, '>>>\n\n')
         self.console_text.update()
 
     def open_dir(self):
-        self.dir_name = tkFileDialog.askdirectory()
+        self.dir_name = tkinter.filedialog.askdirectory()
         self.entry_var.set(self.dir_name)
         if not self.dir_name:
             self.message_info("No directory was choose!")
             self.dir_name = ""
             return
-        self.console_text.insert(END, 'You choose the ' + self.dir_name + ', files are as follows:' + '\n')
+        self.console_text.insert(END, '> You choose:\n' + self.dir_name + '\n> Files are as follows:' + '\n')
         for each_dir in os.listdir(self.entry_var.get()):
-            self.console_text.insert(END, each_dir + '\n')
+            self.console_text.insert(END, '> ' + each_dir + '\n')
+        self.console_text.insert(END, '\n')
         self.console_text.update()
 
     def transfer_files(self):
         if self.dir_name == "":
             self.message_info("You must choose your file directory first!")
             return
-        CONTROLLER.course_for_teacher(self, self.dir_name)
+        CONTROLLER.transfer_to_diff_dirs(self, self.dir_name)
 
     def message_info(self, message):
-        tkMessageBox.showinfo(self.content_frame, message=message)
+        tkinter.messagebox.showinfo(self.content_frame, message=message)
 
 
 def center_window(root, width, height):

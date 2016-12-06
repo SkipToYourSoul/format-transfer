@@ -5,83 +5,102 @@ Creation Date: 2016/11/26
 Description:
 """
 
-from Tkinter import *
-import ConfigParser
-import tkMessageBox
+import configparser
+from tkinter import *
+import tkinter.messagebox
 import os
-import sys
-import chardet
 import traceback
-import bean
+import bean.office_unit as bean
+import shutil
+import logging
+import datetime
 
-reload(sys)
-sys.setdefaultencoding("utf8")
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='./logs/backend.' + str(datetime.date.today()) + '.log',
+                    filemode='a')
 
-teacher_config_map = {}
 
-
-def course_for_teacher(gui, course_dir):
-    # get config file
+def transfer_to_diff_dirs(gui, course_dir):
+    # get course name
     course_name = course_dir.replace(os.path.dirname(course_dir)+"/", "")
     course_name = course_name.split("-")[0] + "-" + course_name.split("-")[1]
-    print course_name
+
+    # check the course name: start with LZ
     if not str(course_name).startswith("LZ", 1, 3):
-        tkMessageBox.showinfo(gui.content_frame, message="You choose an error directory.")
-        gui.console_text.insert(END, 'You choose an error directory.\n')
-        gui.console_text.update()
+        tkinter.messagebox.showinfo(gui.content_frame, message="You choose an error directory.")
+        show_message(gui, '> You choose an error directory, please retry.')
         return
-    get_config(course_name)
 
-    # make new dirs if not exists
-    teacher_path = make_dir_if_not_exists(course_dir, "Course4Teacher")
+    show_message(gui, '>>>\n> Begin to handle course: ' + course_name)
 
-    # transfer and copy files to new directory
+    # get config file and do it
+    config_dict = get_config(course_name)
+    logging.info(config_dict)
+    for key, val in config_dict.items():
+        show_message(gui, '---\n> Start to do ' + key + ' files')
+        sub_transfer_to_dirs(gui, course_dir, key, val)
+        show_message(gui, '> Complete to do ' + key + ' files\n---')
+
+    tkinter.messagebox.showinfo(gui.content_frame, message="Success")
+
+
+def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict):
     try:
-        for key, val in teacher_config_map.items():
+        # make new dirs if not exists
+        new_dir_name = "Course4" + dir_tag
+        new_path = make_dir_if_not_exists(course_dir, new_dir_name)
+
+        for key, val in sub_config_dict.items():
+            # check input file exists
+            input_path = get_abs_path(course_dir + "/" + val)
+            if not os.path.exists(input_path):
+                show_message(gui, '> Current course has not ' + val + ', continue.')
+                continue
+
+            # transfer files
             if key.startswith('transfer'):
                 transfer_type = key.split(".")[-1]
-                input_path = course_dir + "/" + val
-                output_path = teacher_path + "/" + val
                 suffix = os.path.splitext(input_path)[1]
-                output_path = output_path.replace(suffix, '.' + transfer_type)
+                output_path = get_abs_path(new_path + "/" + val)
+                output_path = get_abs_path(output_path.replace(suffix, '.' + transfer_type))
+                if os.path.exists(output_path):
+                    show_message(gui, '> ' + val + ' has already exists, continue.')
+                    continue
+                show_message(gui, '> Transfer ' + input_path + ' to ' + output_path)
+                transfer_files(suffix, input_path, output_path)
 
-                if not os.path.isabs(input_path):
-                    input_path = os.path.abspath(input_path)
-
-                if not os.path.isabs(output_path):
-                    output_path = os.path.abspath(output_path)
-
-                print key
-                print val
-                print transfer_type
-                print suffix
-                print input_path
-                print output_path
-
-                input_path = input_path.decode("utf-8").encode("gbk")
-                output_path = output_path.decode("utf-8").encode("gbk")
-
-                input_path = "C:/Users/liye/Desktop/CourseSource/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-学生课程材料/[LZ-Y1001]认识空气-学生课程材料.docx"
-                output_path = "C:/Users/liye/Desktop/Course4Teacher/[LZ-Y1001]认识空气-学生课程材料.pdf"
-                print chardet.detect(input_path)
-                print chardet.detect(output_path)
-
-                if suffix == ".docx" or suffix == ".doc":
-                    word = bean.Word(input_path)
-                    word.transfer_to_pdf(output_path)
-
-                if suffix == ".pptx" or suffix == ".ppt":
-                    ppt = bean.PowerPoint(input_path)
-                    if transfer_type == "pdf":
-                        ppt.transfer_to_pdf(output_path)
-                    elif transfer_type == "jpg":
-                        ppt.transfer_to_jpgs(output_path)
-    except Exception, e:
+            # copy files
+            elif key.startswith('copy'):
+                output_path = get_abs_path(new_path + "/" + val)
+                if os.path.exists(output_path):
+                    show_message(gui, '> ' + val + ' has already exists, continue.')
+                    continue
+                show_message(gui, '> Copy ' + input_path + ' to ' + output_path)
+                if key.split(".")[-1] == "dir":
+                    shutil.copytree(input_path, output_path)
+                elif key.split(".")[-1] == "file":
+                    shutil.copy(input_path, output_path)
+    except Exception as e:
         traceback.print_exc()
-        tkMessageBox.showinfo(gui.content_frame, message="Some mistake occurred.")
+        logging.error(e)
+        tkinter.messagebox.showinfo(gui.content_frame, message="Some mistake occurred.")
         return
 
-    tkMessageBox.showinfo(gui.content_frame, message="Success")
+
+def transfer_files(suffix, input_path, output_path):
+    # if suffix == ".docx" or suffix == ".doc":
+    #     word = bean.Word(input_path)
+    #     word.transfer_to_pdf(output_path)
+    #
+    # if suffix == ".pptx" or suffix == ".ppt":
+    #     ppt = bean.PowerPoint(input_path)
+    #     if transfer_type == "pdf":
+    #         ppt.transfer_to_pdf(output_path)
+    #     elif transfer_type == "jpg":
+    #         ppt.transfer_to_jpgs(output_path)
+    return
 
 
 def make_dir_if_not_exists(course_dir, dir_name):
@@ -95,9 +114,27 @@ def make_dir_if_not_exists(course_dir, dir_name):
 
 
 def get_config(course_name):
-    config_file = ConfigParser.ConfigParser()
-    config_file.read("./config.conf")
+    config_file = configparser.ConfigParser()
+    config_file.read("./config.conf", "utf-8")
+    config_dict = {}
 
-    for key, value in config_file.items("teacher"):
-        value = value.replace('$CN', course_name)
-        teacher_config_map[key] = value
+    for section in config_file.sections():
+        section_dict = {}
+        for key, value in config_file.items(section):
+            value = value.replace('$CN', course_name)
+            section_dict[key] = value
+        config_dict[section] = section_dict
+
+    return config_dict
+
+
+def show_message(gui, message):
+    gui.console_text.insert(END, message + '\n')
+    gui.console_text.update()
+
+
+def get_abs_path(current_path):
+    if not os.path.isabs(current_path):
+        return os.path.abspath(current_path)
+    else:
+        return current_path
