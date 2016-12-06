@@ -10,6 +10,8 @@ import ConfigParser
 import tkMessageBox
 import os
 import sys
+import chardet
+import traceback
 import bean
 
 reload(sys)
@@ -21,6 +23,7 @@ teacher_config_map = {}
 def course_for_teacher(gui, course_dir):
     # get config file
     course_name = course_dir.replace(os.path.dirname(course_dir)+"/", "")
+    course_name = course_name.split("-")[0] + "-" + course_name.split("-")[1]
     print course_name
     if not str(course_name).startswith("LZ", 1, 3):
         tkMessageBox.showinfo(gui.content_frame, message="You choose an error directory.")
@@ -48,12 +51,20 @@ def course_for_teacher(gui, course_dir):
                 if not os.path.isabs(output_path):
                     output_path = os.path.abspath(output_path)
 
-                # print key
-                # print val
-                # print transfer_type
-                # print suffix
-                # print input_path
-                # print output_path
+                print key
+                print val
+                print transfer_type
+                print suffix
+                print input_path
+                print output_path
+
+                input_path = input_path.decode("utf-8").encode("gbk")
+                output_path = output_path.decode("utf-8").encode("gbk")
+
+                input_path = "C:/Users/liye/Desktop/CourseSource/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-学生课程材料/[LZ-Y1001]认识空气-学生课程材料.docx"
+                output_path = "C:/Users/liye/Desktop/Course4Teacher/[LZ-Y1001]认识空气-学生课程材料.pdf"
+                print chardet.detect(input_path)
+                print chardet.detect(output_path)
 
                 if suffix == ".docx" or suffix == ".doc":
                     word = bean.Word(input_path)
@@ -66,7 +77,9 @@ def course_for_teacher(gui, course_dir):
                     elif transfer_type == "jpg":
                         ppt.transfer_to_jpgs(output_path)
     except Exception, e:
+        traceback.print_exc()
         tkMessageBox.showinfo(gui.content_frame, message="Some mistake occurred.")
+        return
 
     tkMessageBox.showinfo(gui.content_frame, message="Success")
 

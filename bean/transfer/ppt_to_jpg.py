@@ -9,6 +9,7 @@ try:
     import sys
     import os
     import traceback
+    import chardet
     from win32com.client import constants, gencache
 except ImportError:
     print >> sys.stderr, """ !!!
@@ -28,6 +29,11 @@ sys.setdefaultencoding("utf8")
 
 
 def ppt_to_jpg(input_path, output_path):
+    in_encode = chardet.detect(input_path).get("encoding")
+    input_path = input_path.decode(in_encode).encode("gbk")
+    out_encode = chardet.detect(output_path).get("encoding")
+    output_path = output_path.decode(out_encode).encode("gbk")
+
     powerpoint = gencache.EnsureDispatch('Powerpoint.application')
     try:
         powerpoint.DisplayAlerts = 0

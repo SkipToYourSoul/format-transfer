@@ -8,6 +8,7 @@ Description: transfer doc(x), ppt(x), xls(x) to PDF file
 try:
     import sys
     import traceback
+    import chardet
     from win32com.client import constants, gencache
 except ImportError:
     print >> sys.stderr, """ !!!
@@ -28,7 +29,17 @@ sys.setdefaultencoding("utf8")
 
 # transfer word file to pdf
 def doc_to_pdf(input_path, output_path):
-    print input_path
+    print chardet.detect(input_path)
+    print chardet.detect(output_path)
+
+    in_encode = chardet.detect(input_path).get("encoding")
+    input_path = input_path.decode(in_encode).encode("gb2312")
+    out_encode = chardet.detect(output_path).get("encoding")
+    output_path = output_path.decode(out_encode).encode("gbk")
+
+    print chardet.detect(input_path)
+    print chardet.detect(output_path)
+
     word_generate_support()
     word = gencache.EnsureDispatch("Word.Application")
     try:
@@ -50,6 +61,11 @@ def doc_to_pdf(input_path, output_path):
 
 # transfer ppt file to pdf
 def ppt_to_pdf(input_path, output_path):
+    in_encode = chardet.detect(input_path).get("encoding")
+    input_path = input_path.decode(in_encode).encode("gbk")
+    out_encode = chardet.detect(output_path).get("encoding")
+    output_path = output_path.decode(out_encode).encode("gbk")
+
     powerpoint = gencache.EnsureDispatch('Powerpoint.application')
     try:
         powerpoint.DisplayAlerts = 0
@@ -67,6 +83,11 @@ def ppt_to_pdf(input_path, output_path):
 
 # transfer excel file to pdf
 def excel_to_pdf(input_path, output_path):
+    in_encode = chardet.detect(input_path).get("encoding")
+    input_path = input_path.decode(in_encode).encode("gbk")
+    out_encode = chardet.detect(output_path).get("encoding")
+    output_path = output_path.decode(out_encode).encode("gbk")
+
     excel = gencache.EnsureDispatch('Excel.application')
 
     # Format setting in excel

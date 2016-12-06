@@ -8,6 +8,7 @@ Description: word, powerpoint, excel class unit
 try:
     import sys
     import transfer
+    import chardet
 except ImportError:
     print >> sys.stderr, """ !!!
     There was a problem importing one of the Python modules required.
@@ -71,6 +72,13 @@ class Excel:
 
 
 if __name__ == '__main__':
-    word = Word("D:/doc-副本.docx")
-    print word.input_path
-    word.transfer_to_pdf("D:/doc-副本.pdf")
+    input_path = "D:/CourseSource/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-学生课程材料/doc-副本.doc"
+    print chardet.detect(input_path)
+
+    # word = Word(input_path)
+    # print word.input_path
+
+    output_path = "D:/doc-副本.pdf"
+    # word.transfer_to_pdf(output_path)
+
+    transfer.doc_to_pdf(input_path, output_path)
