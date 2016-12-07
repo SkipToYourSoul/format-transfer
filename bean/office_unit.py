@@ -5,22 +5,8 @@ Creation Date: 2016/11/25
 Description: word, powerpoint, excel class unit
 """
 
-try:
-    import sys
-    import bean.ppt_to_jpg as ppt_to_jpg
-    import bean.file_to_pdf as file_to_pdf
-except ImportError:
-    print >> sys.stderr, """ !!!
-    There was a problem importing one of the Python modules required.
-    The error leading to this problem was:
-    %s
-
-    Please install a package which provides this module, or verify that the module is installed correctly.
-    It's possible that the above module doesn't match the current version of Python, which is:
-    %s
-
-    """ % (sys.exc_info(), sys.version)
-    sys.exit(1)
+import bean.file_to_jpg as ppt_to_jpg
+import bean.file_to_pdf as file_to_pdf
 
 
 class Word:
@@ -69,13 +55,11 @@ class Excel:
 
 
 if __name__ == '__main__':
-    input_path = "D:/CourseSource/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-学生课程材料/doc-副本.doc"
+    input_path = "C:/Users/liye/Desktop/format-test/CourseSource/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-器材清单.xlsx"
+    input_path = input_path.replace('/', '\\')
+    excel = Excel(input_path)
 
-    # word = Word(input_path)
-    # print word.input_path
+    output_path = "C:/Users/liye/Desktop/format-test/Course4Teacher/[LZ-Y1001]认识空气-1.0版/[LZ-Y1001]认识空气-器材清单.pdf"
+    output_path = output_path.replace('/', '\\')
 
-    output_path = "D:/doc-副本.pdf"
-    # word.transfer_to_pdf(output_path)
-
-    # file_to_pdf.doc_to_pdf(input_path, output_path)
-    print(sys.getdefaultencoding())
+    excel.transfer_to_pdf(output_path)

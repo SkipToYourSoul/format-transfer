@@ -2,16 +2,16 @@
 """
 Author: liye@qiyi.com
 Creation Date: 2016/11/23
-Description: transfer ppt to jpgs
+Description: transfer ppt(x) to jpgs
 """
+import os
+import traceback
 
 try:
-    import sys
-    import os
-    import traceback
     from win32com.client import constants, gencache
 except ImportError:
-    print >> sys.stderr, """ !!!
+    import sys
+    print(sys.stderr, """ !!!
     There was a problem importing one of the Python modules required.
     The error leading to this problem was:
     %s
@@ -20,7 +20,7 @@ except ImportError:
     It's possible that the above module doesn't match the current version of Python, which is:
     %s
 
-    """ % (sys.exc_info(), sys.version)
+    """) % (sys.exc_info(), sys.version)
     sys.exit(1)
 
 

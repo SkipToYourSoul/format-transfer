@@ -4,13 +4,13 @@ Author: liye@qiyi.com
 Creation Date: 2016/11/22
 Description: transfer doc(x), ppt(x), xls(x) to PDF file
 """
+import traceback
 
 try:
-    import sys
-    import traceback
     from win32com.client import constants, gencache
 except ImportError:
-    print >> sys.stderr, """ !!!
+    import sys
+    print(sys.stderr, """ !!!
     There was a problem importing one of the Python modules required.
     The error leading to this problem was:
     %s
@@ -19,7 +19,7 @@ except ImportError:
     It's possible that the above module doesn't match the current version of Python, which is:
     %s
 
-    """ % (sys.exc_info(), sys.version)
+    """) % (sys.exc_info(), sys.version)
     sys.exit(1)
 
 
@@ -73,8 +73,8 @@ def excel_to_pdf(input_path, output_path):
     try:
         excel.DisplayAlerts = 0
         wb = excel.Workbooks.Open(input_path)
-        wb.SaveAs(output_path, FileFormat=57)
-        # wb.ExportAsFixedFormat(0, output)
+        # wb.SaveAs(output_path, FileFormat=57)
+        wb.ExportAsFixedFormat(0, output_path)
         return 0
     except Exception as e:
         traceback.format_exc()

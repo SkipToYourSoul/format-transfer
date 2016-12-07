@@ -2,28 +2,14 @@
 """
 Author: liye@qiyi.com
 Creation Date: 2016/11/26
-Description: 
+Description: gui frame
 """
 
-try:
-    import sys
-    import os
-    from tkinter import *
-    import tkinter.messagebox
-    import tkinter.filedialog
-    import controller.main_controller as CONTROLLER
-except ImportError:
-    print >> sys.stderr, """ !!!
-    There was a problem importing one of the Python modules required.
-    The error leading to this problem was:
-    %s
-
-    Please install a package which provides this module, or verify that the module is installed correctly.
-    It's possible that the above module doesn't match the current version of Python, which is:
-    %s
-
-    """ % (sys.exc_info(), sys.version)
-    sys.exit(1)
+import os
+from tkinter import *
+import tkinter.messagebox
+import tkinter.filedialog
+import gui.gui_controller as gui_controller
 
 
 class MainContainer(object):
@@ -31,7 +17,7 @@ class MainContainer(object):
 
     def guide(self):
         self.console_text.insert(END, 'Please check the README.md\n'
-                                      'More information will show in https://github.com/SkipToYourSoul/format-transfer')
+                                      'More information will show in https://github.com/SkipToYourSoul/format-transfer\n\n')
 
     def clear(self):
         self.console_text.delete('1.0', '999999.0')
@@ -110,7 +96,7 @@ class MainContainer(object):
         if self.dir_name == "":
             self.message_info("You must choose your file directory first!")
             return
-        CONTROLLER.transfer_to_diff_dirs(self, self.dir_name)
+        gui_controller.transfer_to_diff_dirs(self, self.dir_name)
 
     def message_info(self, message):
         tkinter.messagebox.showinfo(self.content_frame, message=message)
