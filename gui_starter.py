@@ -11,7 +11,7 @@ import gui.gui_components as gui
 
 def main():
     root = Tk()
-    root.title('File Transfer')
+    root.title('File-Transfer')
     root.resizable(0, 0)
     gui.center_window(root, 800, 600)
     container = gui.MainContainer(os.curdir, root)

@@ -21,6 +21,7 @@ class MainContainer(object):
 
     def clear(self):
         self.console_text.delete('1.0', '999999.0')
+        self.hello_message()
 
     def help(self):
         tkinter.messagebox.showinfo(self.root, ' Author: liye \n Version: 1.0 \n Help email: liye.forwork@foxmail.com')
