@@ -60,6 +60,8 @@ def transfer_to_diff_dirs(gui, course_dir):
     show_message(gui, '> Complete to handle course: ' + course_name + ', please check you files, see you!\n>>>')
 
 
+# dir_tag: teacher, production, business etc.
+# sub_config_dict: detail config of a config section
 def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict, course_name):
     try:
         # make new dirs if not exists
@@ -67,10 +69,8 @@ def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict, course_name)
         new_path = make_dir_if_not_exists(course_dir, new_dir_name)
 
         # hand over file
-        hand_over_file = new_path + "/交付文件清单.txt"
+        hand_over_file = new_path + "/交付文件清单_TO_" + dir_tag + ".txt"
         file = open(hand_over_file, "a")
-        file.write(">>> " + course_name + "文件交付清单...\n\n")
-        file_count = 1
 
         for key, val in sub_config_dict.items():
             # check input file exists
@@ -107,8 +107,7 @@ def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict, course_name)
                     shutil.copy(input_path, output_path)
 
             # generate file list
-            gen_hand_over_file(dir_tag, key, file, course_name, file_count)
-            file_count += 1
+            gen_hand_over_file(dir_tag, key, file, course_name)
         file.close()
     except Exception as e:
         traceback.print_exc()
@@ -118,7 +117,7 @@ def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict, course_name)
     return 0
 
 
-def gen_hand_over_file(dir_tag, file_name, file, course_name, file_count):
+def gen_hand_over_file(dir_tag, file_name, file, course_name):
     # current_section: Teacher
     # hand_over_file_name: transfer.studentCourse.pdf
 
@@ -129,11 +128,11 @@ def gen_hand_over_file(dir_tag, file_name, file, course_name, file_count):
 
     for section in config_file.sections():
         if section.upper() == current_file.upper():
-            file.write("材料" + str(file_count) + ":\n")
+            file.write("--------------------\n")
             for key, value in config_file.items(section):
                 value = value.replace('$CN', course_name)
                 file.write(key + " > " + value + "\n")
-    file.write("\n")
+            file.write("--------------------\n\n")
 
 
 def transfer_files(suffix, transfer_type, input_path, output_path):
