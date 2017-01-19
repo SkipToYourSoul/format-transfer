@@ -8,16 +8,10 @@ Description:
     2. transfer/copy files according the config file
 """
 
-import tkinter.messagebox
-import tkinter
-import configparser
-import os
-import traceback
-import shutil
-import logging
-import datetime
-import bean.office_unit as bean
+from gui.__init__ import *
+import gui.gui_config as CONFIG
 
+# define the log
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S',
@@ -25,114 +19,117 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='a')
 
 
+# entrance function
 def transfer_to_diff_dirs(gui, course_dir):
-    # get course name: eg [LZ-Y1001]认识空气
+    # STEP1: get course name and check the directory
+    # A course name may: [LZ-Y1001]认识空气-1.0版
     course_name = course_dir.replace(os.path.dirname(course_dir)+"/", "")
-    if len(course_name.split("-")) < 2:
-        tkinter.messagebox.showinfo(gui.content_frame, message="You choose an error directory.")
-        show_message(gui, '> A correct course directory may be [LZ-Y1001]xxxx-0.1.\n')
-        return
-    course_name = course_name.split("-")[0] + "-" + course_name.split("-")[1]
 
     # check the course name: start with LZ
-    if not str(course_name).startswith("LZ", 1, 3) or not os.path.dirname(course_dir).endswith("CourseSource"):
-        tkinter.messagebox.showinfo(gui.content_frame, message="You choose an error directory.")
-        show_message(gui, '> You choose an error directory, please retry.')
-        show_message(gui, '>  1. Confirm your course name is start with <[LZ-XXXX]>')
-        show_message(gui, '>  2. Confirm your course dirs are in <CourseSource/course_dir>\n')
+    if len(course_name.split("-")) < 2 or \
+            not str(course_name).startswith("LZ", 1, 3) or \
+            not os.path.dirname(course_dir).endswith("CourseSource"):
+        tkinter.messagebox.showinfo(gui.content_frame, message="你选择了一个错误的目录")
+        show_message(gui, '> 请确认你选择的目录，注意以下两点')
+        show_message(gui, '>  1. 确认你的课程名为以下格式 <[LZ-XXXX]-xx>')
+        show_message(gui, '>  2. 确认你的课程目录结构为 <CourseSource/course_dir>\n')
         return
 
-    show_message(gui, '>>>\n> Begin to handle course: ' + course_name)
+    # filter course name to normal format: [LZ-Y1001]认识空气
+    course_name = course_name.split("-")[0] + "-" + course_name.split("-")[1]
 
-    # get config file and do it
-    config_dict = get_config(course_name)
+    # STEP2: begin to transfer file according to the config file
+    show_message(gui, '>>>\n> 开始处理课程文件: ' + course_name)
+
+    # get config file and check the config is correct
+    config_dict = CONFIG.get_config(course_name)
     if len(config_dict) == 0:
-        show_message(gui, '> Empty config file or Wrong config file, exit.\n')
+        show_message(gui, '> 配置文件出错，中断程序.\n')
         return
+
+    # do the transfer work
     for key, val in config_dict.items():
-        show_message(gui, '---\n> Start to do ' + key + ' files')
+        show_message(gui, '---\n> 开始处理 ' + key + ' 文件夹')
         if sub_transfer_to_dirs(gui, course_dir, key, val, course_name) == 0:
-            show_message(gui, '> Complete to do ' + key + ' files\n---')
+            show_message(gui, '> ' + key + ' 文件夹处理完成\n---')
         else:
-            show_message(gui, '> Not complete to do ' + key + ' files\n---')
+            show_message(gui, '> ' + key + ' 文件夹处理异常\n---')
 
-    tkinter.messagebox.showinfo(gui.content_frame, message="Complete")
-    show_message(gui, '> Complete to handle course: ' + course_name + ', please check you files, see you!\n>>>')
+    show_message(gui, '> ' + course_name + '转换完成, 请查看文件是否正确!\n>>>')
 
 
+# course_dir: xxxx/CourseSource/[LZ-Y1001]认识空气-1.0版
 # dir_tag: teacher, production, business etc.
 # sub_config_dict: detail config of a config section
+# course_name: [LZ-Y1001]认识空气
 def sub_transfer_to_dirs(gui, course_dir, dir_tag, sub_config_dict, course_name):
     try:
         # make new dirs if not exists
         new_dir_name = "Course4" + dir_tag
         new_path = make_dir_if_not_exists(course_dir, new_dir_name)
 
-        # hand over file
-        hand_over_file = new_path + "/交付文件清单_TO_" + dir_tag + ".txt"
-        file = open(hand_over_file, "a")
-
         for key, val in sub_config_dict.items():
-            # check input file exists
+            # check input file exists in current course
             input_path = get_abs_path(course_dir + "/" + val)
             if not os.path.exists(input_path):
-                show_message(gui, '> Current course has not ' + val + ', continue.')
                 continue
 
             # transfer files
             if key.startswith('transfer'):
+                # transfer [suffix] to [transfer_type]
                 transfer_type = key.split(".")[-1]
                 suffix = os.path.splitext(input_path)[1]
                 output_path = get_abs_path(new_path + "/" + val)
+
+                # put jpgs to a directory
                 if transfer_type == "jpg":
                     output_path = get_abs_path(output_path.replace(suffix, ''))
                 else:
                     output_path = get_abs_path(output_path.replace(suffix, '.' + transfer_type))
                 if os.path.exists(output_path):
-                    show_message(gui, '> ' + val + ' has already exists, continue.')
+                    show_message(gui, '> 文件' + val + ' 已经转换完成')
                     continue
-                show_message(gui, '> Transfer:\n ' + input_path + '\n To\n ' + output_path)
+                show_message(gui, '- 将：' + input_path + '\n - 转换为： ' + output_path + '\n')
                 transfer_files(suffix, transfer_type, input_path, output_path)
 
             # copy files
             elif key.startswith('copy'):
                 output_path = get_abs_path(new_path + "/" + val)
                 if os.path.exists(output_path):
-                    show_message(gui, '> ' + val + ' has already exists, continue.')
+                    show_message(gui, '> 文件' + val + ' 已经复制完成')
                     continue
-                show_message(gui, '> Copy:\n ' + input_path + '\n To\n ' + output_path)
                 if key.split(".")[-1] == "dir":
                     shutil.copytree(input_path, output_path)
                 elif key.split(".")[-1] == "file":
                     shutil.copy(input_path, output_path)
+                show_message(gui, '- 将：' + input_path + '\n - 复制到： ' + output_path + '\n')
+    except Exception as e:
+        traceback.print_exc()
+        logging.error(e)
+        tkinter.messagebox.showinfo(gui.content_frame, message="转换如下文件夹中的文件时发生错误： " + dir_tag)
+        return 1
 
-            # generate file list
-            gen_hand_over_file(dir_tag, key, file, course_name)
+    try:
+        # hand over file
+        hand_over_file = new_path + "/" + dir_tag + "交付文件清单.txt"
+        hand_over_config = CONFIG.get_handover_config(course_name)
+        file = open(hand_over_file, "w")
+
+        for key, val in sub_config_dict.items():
+            handover_config_section = "%s.%s" % (dir_tag, key.split('.')[1])
+            if handover_config_section in hand_over_config.keys():
+                file.write("%s -> 交付说明:\n" % val)
+                for handover_key, handover_value in hand_over_config[handover_config_section].items():
+                    file.write("%s: %s\n" % (handover_key, handover_value))
+                file.write("\n")
         file.close()
     except Exception as e:
         traceback.print_exc()
         logging.error(e)
-        tkinter.messagebox.showinfo(gui.content_frame, message="Some mistake occurred in " + dir_tag)
+        tkinter.messagebox.showinfo(gui.content_frame, message="生成如下交付文件清单时发生错误： " + dir_tag)
         return 1
+
     return 0
-
-
-def gen_hand_over_file(dir_tag, file_name, file, course_name):
-    # current_section: Teacher
-    # hand_over_file_name: transfer.studentCourse.pdf
-
-    config_file = configparser.ConfigParser()
-    config_file.read("./hand_over.conf", "utf-8")
-
-    current_file = dir_tag + "." + file_name.split(".")[1]
-
-    for section in config_file.sections():
-        if section.upper() == current_file.upper():
-            file.write("--------------------\n")
-            for key, value in config_file.items(section):
-                value = value.replace('$CN', course_name)
-                file.write(key + " > " + value + "\n")
-            file.write("--------------------\n\n")
 
 
 def transfer_files(suffix, transfer_type, input_path, output_path):
@@ -170,25 +167,6 @@ def make_dir_if_not_exists(course_dir, dir_name):
     if not os.path.exists(file_path):
         os.makedirs(file_path)
     return file_path
-
-
-def get_config(course_name):
-    config_dict = {}
-
-    try:
-        config_file = configparser.ConfigParser()
-        config_file.read("./config.conf", "utf-8")
-        for section in config_file.sections():
-            section_dict = {}
-            for key, value in config_file.items(section):
-                value = value.replace('$CN', course_name)
-                section_dict[key] = value
-            config_dict[section] = section_dict
-    except Exception as e:
-        traceback.print_exc()
-        logging.error(e)
-    finally:
-        return config_dict
 
 
 def show_message(gui, message):

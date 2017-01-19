@@ -5,10 +5,7 @@ Creation Date: 2016/11/26
 Description: gui frame
 """
 
-import os
-from tkinter import *
-import tkinter.messagebox
-import tkinter.filedialog
+from gui.__init__ import *
 import gui.gui_controller as gui_controller
 
 
@@ -16,14 +13,14 @@ class MainContainer(object):
     dir_name = ""
 
     def guide(self):
-        self.console_text.insert(END, 'Please check the README.md\n'
-                                      'More information will show in https://github.com/SkipToYourSoul/format-transfer\n\n')
+        self.console_text.insert(END, u'请阅读：README.md\n'
+                                      u'工具下载地址：https://github.com/SkipToYourSoul/format-transfer\n\n')
 
     def clear(self):
         self.console_text.delete('1.0', '999999.0')
         self.hello_message()
 
-    def help(self):
+    def about(self):
         tkinter.messagebox.showinfo(self.root, ' Author: liye \n Version: 1.0 \n Help email: liye.forwork@foxmail.com')
 
     def __init__(self, init_dir=None, master=None):
@@ -41,18 +38,18 @@ class MainContainer(object):
 
         # help menu
         help_menu = Menu(self.menu_bar, tearoff=0)
-        help_menu.add_command(label="About", command=self.help)
+        help_menu.add_command(label="About", command=self.about)
         self.menu_bar.add_cascade(label="Help", menu=help_menu)
         master.config(menu=self.menu_bar)
 
         # top area
         top_frame = Frame(master, height=80)
         top_frame.pack(side=TOP, padx=5, pady=5)
-        self.dir_label = Label(top_frame, text='The directory you choose is: ')
+        self.dir_label = Label(top_frame, text=u'你选择的目录是: ')
         self.entry_var = StringVar()
         self.dir_entry = Entry(top_frame, textvariable=self.entry_var, width=50)
-        self.dir_button = Button(top_frame, command=self.open_dir, text='Choose directory')
-        self.transfer_button = Button(top_frame, command=self.transfer_files, text='Transfer')
+        self.dir_button = Button(top_frame, command=self.open_dir, text=u'选择课程文件目录')
+        self.transfer_button = Button(top_frame, command=self.transfer_files, text=u'一键转换')
 
         self.dir_label.grid(row=0, column=0, sticky=W)
         self.dir_entry.grid(row=0, column=1)
@@ -73,10 +70,10 @@ class MainContainer(object):
 
     def hello_message(self):
         self.console_text.insert(END, '>>>\n')
-        self.console_text.insert(END, '> Welcome to use file transfer for your course file \n')
-        self.console_text.insert(END, '> 1. Write your config file with the template in \'config.conf\'.\n')
-        self.console_text.insert(END, '> 2. Press the Choose Button to choose your course dir.\n')
-        self.console_text.insert(END, '> 3. Click transfer button and have fun ^-^\n')
+        self.console_text.insert(END, '> 欢迎使用课程文件转换工具，你可以从以下几个步骤开始： \n')
+        self.console_text.insert(END, '> 1. 配置转换文件\'config.conf\'，配置交付清单文件\'hand_over.conf\'.\n')
+        self.console_text.insert(END, '> 2. 选择课程所在的目录位置.\n')
+        self.console_text.insert(END, '> 3. 点击一键转换然后喝一口咖啡 ^-^\n')
         self.console_text.insert(END, '>>>\n\n')
         self.console_text.update()
 
@@ -84,10 +81,10 @@ class MainContainer(object):
         self.dir_name = tkinter.filedialog.askdirectory()
         self.entry_var.set(self.dir_name)
         if not self.dir_name:
-            self.message_info("No directory was choose!")
+            self.message_info("没有选中任何目录!")
             self.dir_name = ""
             return
-        self.console_text.insert(END, '> You choose:\n' + self.dir_name + '\n> Files are as follows:' + '\n')
+        self.console_text.insert(END, '> 当前选中目录为:\n' + self.dir_name + '\n> 该目录中包含如下文件:' + '\n')
         for each_dir in os.listdir(self.entry_var.get()):
             self.console_text.insert(END, '> ' + each_dir + '\n')
         self.console_text.insert(END, '\n')
@@ -95,9 +92,13 @@ class MainContainer(object):
 
     def transfer_files(self):
         if self.dir_name == "":
-            self.message_info("You must choose your file directory first!")
+            self.message_info("请先选择课程目录!")
             return
-        gui_controller.transfer_to_diff_dirs(self, self.dir_name)
+        try:
+            gui_controller.transfer_to_diff_dirs(self, self.dir_name)
+            self.message_info("转换完成！")
+        except Exception as e:
+            self.message_info("转换过程出错，错误原因为：\n%s" % e)
 
     def message_info(self, message):
         tkinter.messagebox.showinfo(self.content_frame, message=message)
